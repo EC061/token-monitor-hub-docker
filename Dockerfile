@@ -14,9 +14,10 @@ RUN git clone --depth 1 --branch ${UPSTREAM_REF} https://github.com/Javis603/tok
  && mkdir -p /app/data \
  && node --check src/hub/server.js
 
+# Runtime defaults live in compose (TOKEN_MONITOR_PORT/HOST) and server.js
+# (17321 / 0.0.0.0). Kept out of ENV: Docker lint flags TOKEN_* in ENV as
+# potential secrets, and these are plain non-sensitive config.
 ENV NODE_ENV=production \
-    TOKEN_MONITOR_PORT=17321 \
-    TOKEN_MONITOR_HOST=0.0.0.0 \
     TOKEN_MONITOR_DATA_FILE=/app/data/devices.json
 
 EXPOSE 17321
