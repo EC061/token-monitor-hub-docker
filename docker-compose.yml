@@ -36,10 +36,12 @@ services:
         max-file: "3"
 
   # Auto-upgrade: polls GHCR hourly, restarts hub only. Remove if you want manual upgrades.
+  # NOTE: containrrr/watchtower is abandoned and crashes on modern Docker daemons
+  # (client API 1.25 too old). nickfedor/watchtower is the maintained fork.
   # Discord alerts: set WATCHTOWER_NOTIFICATION_URL in .env to a shoutrrr URL,
   # e.g. discord://webhook_id/webhook_token (Discord webhook). Leave empty to disable.
   watchtower:
-    image: containrrr/watchtower
+    image: nickfedor/watchtower
     container_name: watchtower
     restart: unless-stopped
     command: --interval 3600 --cleanup --include-restarting
