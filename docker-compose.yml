@@ -1,0 +1,45 @@
+# 1Panel -> Container -> Compose -> Create : paste this file, set TOKEN_MONITOR_SECRET in .env
+# Host: 150.136.85.210 | Domain reuse: token-hub.edwardcheng.net -> A record to 150.136.85.210
+# Hub listens on 17321. Put 1Panel OpenResty reverse proxy + Let's Encrypt in front.
+services:
+  hub:
+    # For auto-upgrade via Watchtower, use the GHCR image (published by docker-publish.yml).
+    # For first boot without GHCR yet, 1Panel will build from ./Dockerfile instead.
+    image: ghcr.io/ec061/token-monitor-hub-node:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: token-monitor-hub
+    restart: unless-stopped
+    # Bind localhost only; 1Panel website proxy forwards 443 -> 127.0.0.1:17321.
+    # Use "17321:17321" only if you are NOT using a reverse proxy.
+    ports:
+      - "127.0.0.1:17321:17321"
+    environment:
+      TOKEN_MONITOR_SECRET: ${TOKEN_MONITOR_SECRET}
+      TOKEN_MONITOR_PORT: "17321"
+      TOKEN_MONITOR_HOST: "0.0.0.0"
+      TOKEN_MONITOR_DATA_FILE: /app/data/devices.json
+      TOKEN_MONITOR_STALE_AFTER_MS: "600000"
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:17321/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Auto-upgrade: polls GHCR hourly, restarts hub only. Remove if you want manual upgrades.
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: unless-stopped
+    command: --interval 3600 --cleanup --include-restarting
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
