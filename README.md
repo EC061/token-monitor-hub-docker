@@ -2,7 +2,7 @@
 
 Docker deployment for the [Token Monitor](https://github.com/Javis603/token-monitor) Node hub (`src/hub/server.js`). For 1Panel + `docker compose` + Watchtower auto-updates.
 
-- Image: `ghcr.io/ec061/token-monitor-hub-node:latest` (built daily + manually by `Build Hub image` workflow)
+- Image: `ghcr.io/ec061/token-monitor-hub-node:latest` (rebuilt on upstream change via hourly check + manually by `Build Hub image` workflow)
 - Upstream is cloned at **build time** (`UPSTREAM_REF=main`), so every image build = latest upstream hub
 - Data persists in `./data/devices.json` (mounted volume)
 - Same HTTP protocol as the Cloudflare Worker hub — just point clients at the new URL with the same `TOKEN_MONITOR_SECRET`
